@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PigeonToDoApp</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📝</text></svg>">
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- React and ReactDOM UMD builds -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX in-browser compilation (acceptable for demo) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-presets="react">
+      const { useEffect, useMemo, useState } = React;
+
+      const PRIORITIES = [
+        { key: 'low', label: 'Low' },
+        { key: 'medium', label: 'Medium' },
+        { key: 'high', label: 'High' },
+      ];
+
+      function loadTasks() {
+        try {
+          const raw = localStorage.getItem('pigeon.tasks');
+          return raw ? JSON.parse(raw) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveTasks(tasks) {
+        localStorage.setItem('pigeon.tasks', JSON.stringify(tasks));
+      }
+
+      function loadTheme() {
+        return localStorage.getItem('pigeon.theme') || 'light';
+      }
+
+      function saveTheme(theme) {
+        localStorage.setItem('pigeon.theme', theme);
+      }
+
+      function uid() {
+        return Math.random().toString(36).slice(2) + Date.now().toString(36);
+      }
+
+      function sortTasks(tasks) {
+        const priorityRank = { high: 0, medium: 1, low: 2 };
+        return [...tasks].sort((a, b) => {
+          const pa = priorityRank[a.priority] ?? 3;
+          const pb = priorityRank[b.priority] ?? 3;
+          if (pa !== pb) return pa - pb;
+          const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+          const db = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+          return da - db;
+        });
+      }
+
+      function TaskForm({ onSubmit, initial, onCancel }) {
+        const [title, setTitle] = useState(initial?.title || '');
+        const [desc, setDesc] = useState(initial?.desc || '');
+        const [priority, setPriority] = useState(initial?.priority || 'medium');
+        const [dueDate, setDueDate] = useState(initial?.dueDate || '');
+
+        return (
+          <form
+            className="card form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!title.trim()) return;
+              onSubmit({ title: title.trim(), desc: desc.trim(), priority, dueDate });
+              setTitle('');
+              setDesc('');
+              setPriority('medium');
+              setDueDate('');
+            }}
+          >
+            <div className="row">
+              <input
+                className="input"
+                placeholder="Task title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div className="row">
+              <textarea
+                className="input"
+                placeholder="Notes (optional)"
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+              />
+            </div>
+            <div className="row grid">
+              <select className="input" value={priority} onChange={(e) => setPriority(e.target.value)}>
+                {PRIORITIES.map((p) => (
+                  <option key={p.key} value={p.key}>{p.label} priority</option>
+                ))}
+              </select>
+              <input
+                className="input"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+              />
+            </div>
+            <div className="row actions">
+              <button className="btn primary" type="submit">{initial ? 'Update Task' : 'Add Task'}</button>
+              {onCancel && (
+                <button type="button" className="btn" onClick={onCancel}>Cancel</button>
+              )}
+            </div>
+          </form>
+        );
+      }
+
+      function TaskItem({ task, onToggle, onDelete, onEdit }) {
+        const overdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
+        return (
+          <div className={`card task ${task.completed ? 'completed' : ''}`}>
+            <div className="task-header">
+              <div className="left">
+                <input type="checkbox" checked={task.completed} onChange={() => onToggle(task.id)} />
+                <h3 title={task.desc || ''}>{task.title}</h3>
+              </div>
+              <div className="badges">
+                {task.priority && <span className={`badge ${task.priority}`}>{task.priority}</span>}
+                {task.dueDate && (
+                  <span className={`badge ${overdue ? 'overdue' : 'due'}`}>{task.dueDate}</span>
+                )}
+              </div>
+            </div>
+            {task.desc && <p className="desc">{task.desc}</p>}
+            <div className="task-actions">
+              <button className="btn" onClick={() => onEdit(task)}>Edit</button>
+              <button className="btn danger" onClick={() => onDelete(task.id)}>Delete</button>
+            </div>
+          </div>
+        );
+      }
+
+      function App() {
+        const [tasks, setTasks] = useState(loadTasks());
+        const [editing, setEditing] = useState(null);
+        const [query, setQuery] = useState('');
+        const [theme, setTheme] = useState(loadTheme());
+
+        useEffect(() => saveTasks(tasks), [tasks]);
+        useEffect(() => {
+          document.documentElement.dataset.theme = theme;
+          saveTheme(theme);
+        }, [theme]);
+
+        const filtered = useMemo(() => {
+          const q = query.trim().toLowerCase();
+          const t = q
+            ? tasks.filter((x) =>
+                x.title.toLowerCase().includes(q) || (x.desc || '').toLowerCase().includes(q)
+              )
+            : tasks;
+          return sortTasks(t);
+        }, [tasks, query]);
+
+        function addTask(newTask) {
+          setTasks((prev) => [
+            ...prev,
+            { id: uid(), completed: false, createdAt: Date.now(), ...newTask },
+          ]);
+        }
+
+        function updateTask(updated) {
+          setTasks((prev) => prev.map((t) => (t.id === updated.id ? { ...t, ...updated } : t)));
+          setEditing(null);
+        }
+
+        function toggleTask(id) {
+          setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
+        }
+
+        function deleteTask(id) {
+          setTasks((prev) => prev.filter((t) => t.id !== id));
+        }
+
+        function clearCompleted() {
+          setTasks((prev) => prev.filter((t) => !t.completed));
+        }
+
+        return (
+          <div className="container">
+            <header className="topbar">
+              <h1>PigeonToDoApp</h1>
+              <div className="top-actions">
+                <input
+                  className="input search"
+                  placeholder="Search tasks..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+                <select className="input" value={theme} onChange={(e) => setTheme(e.target.value)}>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                  <option value="dim">Dim</option>
+                </select>
+                <button className="btn" onClick={clearCompleted}>Clear completed</button>
+              </div>
+            </header>
+
+            {editing ? (
+              <TaskForm
+                initial={editing}
+                onCancel={() => setEditing(null)}
+                onSubmit={(payload) => updateTask({ ...editing, ...payload })}
+              />
+            ) : (
+              <TaskForm onSubmit={addTask} />
+            )}
+
+            <section className="list">
+              {filtered.length === 0 ? (
+                <div className="empty">No tasks yet. Add one above!</div>
+              ) : (
+                filtered.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    onToggle={toggleTask}
+                    onDelete={deleteTask}
+                    onEdit={setEditing}
+                  />
+                ))
+              )}
+            </section>
+
+            <footer className="footer">
+              <p>
+                Simple, focused, and stress-free. Data is stored locally in your browser.
+              </p>
+            </footer>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  </body>
+  </html>
+
