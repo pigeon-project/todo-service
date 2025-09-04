@@ -1,0 +1,20 @@
+{
+  "name": "pigeon-todo-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 8000 --host"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "vite": "5.4.3",
+    "@vitejs/plugin-react": "4.3.1"
+  }
+}
+
