@@ -23,3 +23,4 @@ Collaboration Made Easy – Share lists and work together with friends, family, 
 # Technical description
 
 UI is implemented in React. 
+
