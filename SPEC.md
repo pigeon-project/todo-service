@@ -17,4 +17,5 @@ Meet PigeonToDoApp, the todo app designed to keep life simple, focused, and stre
 
 # Technical description
 
-Implement UI in React.
+UI is implemented in React.
+
