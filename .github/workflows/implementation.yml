@@ -21,11 +21,26 @@ jobs:
       - run: echo $OPENAI_TOKEN > ~/.codex/auth.json
         env:
           OPENAI_TOKEN: ${{ secrets.OPENAI_TOKEN }}
-      - run: |
-          npx --yes @openai/codex exec --full-auto "Implement a solution described in SPEC.md file. \
-          Add Dockerfile for running the solution. The Dockerfile has to be in the root of the repository. \
-          Expose solution on port 8000 in Dockerfile. Don't add .dockerignore file. Ensure that Dockerfile works. \
-          Ensure to read the whole SPEC.md file before starting implementation."
+      # Create full prompt with entire SPEC.md content
+      - name: Build prompt with full SPEC.md
+        run: |
+          {
+            echo "Implement a solution described in SPEC.md below."
+            echo "Add Dockerfile for running the solution (in repo root) and expose port 8000."
+            echo "Do NOT add a .dockerignore file. Ensure the Dockerfile works."
+            echo "Read and follow the ENTIRE SPEC.md content exactly as provided below."
+            echo
+            echo "----- BEGIN SPEC.md -----"
+            cat SPEC.md
+            echo
+            echo "----- END SPEC.md -----"
+            echo
+            echo "Now implement the solution and modify the repository accordingly."
+          } > .codex_prompt.txt
+      # Run Codex CLI in full-auto mode with our full prompt
+      - name: Run Codex on full SPEC.md
+        run: |
+          npx --yes @openai/codex exec --full-auto "$(< ./.codex_prompt.txt)"
       - uses: peter-evans/create-pull-request@v7
         with:
           commit-message: codex version
