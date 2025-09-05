@@ -28,6 +28,7 @@ jobs:
             echo "Implement a solution described in SPEC.md below."
             echo "Add Dockerfile for running the solution (in repo root) and expose port 8000."
             echo "Do NOT add a .dockerignore file. Ensure the Dockerfile works."
+            echo "At the end, ensure all code compiles/builds and is runnable in the produced image."
             echo "Read and follow the ENTIRE SPEC.md content exactly as provided below."
             echo
             echo "----- BEGIN SPEC.md -----"
