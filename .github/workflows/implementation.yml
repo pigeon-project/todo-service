@@ -24,11 +24,10 @@ jobs:
       - run: |
           npx --yes @openai/codex exec --full-auto "Implement a solution described in SPEC.md file. \
           Add Dockerfile for running the solution. The Dockerfile has to be in the root of the repository. \
-          Expose solution on port 8000 in Dockerfile."
+          Expose solution on port 8000 in Dockerfile. Don't add .dockerignore file. Ensure that Dockerfile works.\"
       - uses: peter-evans/create-pull-request@v7
         with:
           commit-message: codex version
           title: Implementation by Codex Agent
           body: First version based on spec.md
           branch: codex-version
-
