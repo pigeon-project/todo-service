@@ -1,0 +1,25 @@
+{
+  "name": "todo-service-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Dev server requires vite; not available in sandbox'",
+    "build": "tsc -b",
+    "preview": "echo 'Preview requires vite; not available in sandbox'"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.20",
+    "@mui/material": "^5.15.20",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "typescript": "^5.5.4",
+    "vite": "^5.3.4"
+  }
+}

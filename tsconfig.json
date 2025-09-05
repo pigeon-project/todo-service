@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "baseUrl": ".",
+    "paths": {
+      "react": ["src/shims/react"],
+      "react-dom/client": ["src/shims/react-dom-client"],
+      "react/jsx-runtime": ["src/shims/react-jsx-runtime"],
+      "@mui/material": ["src/shims/mui-material"],
+      "@emotion/react": ["src/shims/emotion-react"],
+      "@emotion/styled": ["src/shims/emotion-styled"],
+      "@mui/icons-material": ["src/shims/mui-icons"]
+    }
+  },
+  "include": ["src"]
+}
