@@ -42,6 +42,9 @@ jobs:
       - name: Run Codex on full SPEC.md
         run: |
           npx --yes @openai/codex exec --full-auto "$(< ./.codex_prompt.txt)"
+      - name: Verify the solution
+        run: |
+          npx --yes @openai/codex exec --full-auto "Verify if the solution is working. Try to build the app. If it fails, fix the issues until it works."
       - uses: peter-evans/create-pull-request@v7
         with:
           commit-message: codex version
